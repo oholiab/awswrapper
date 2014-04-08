@@ -1,5 +1,5 @@
 function get_credentials {
-  if [ -z $1 -o -z $2 ]; then 
+  if [ -z "$1" -o -z "$2" ]; then 
     echo "2 arguments expected" >&2
     return 1
   fi
@@ -20,4 +20,13 @@ function get_credentials {
   fi
   echo $key
   return 0
+}
+
+function run_command {
+  if [ -z "$1" ]; then
+    echo "1 argument expected" >&2
+    return 1
+  fi
+  eval $1
+  return $?
 }
