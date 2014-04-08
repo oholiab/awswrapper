@@ -27,6 +27,25 @@ function run_command {
     echo "1 argument expected" >&2
     return 1
   fi
-  eval $1
+  eval "$*"
   return $?
+}
+
+function are_all_regions {
+  all_valid_regions="us-east-1 us-west-1 us-west-2 eu-west-1 ap-southeast-1 ap-southeast-2 ap-northeast-1 sa-east-1"
+  for i in $*; do
+    [[ ! $all_valid_regions =~ $i ]] && echo "$i is not a valid region" >&2 &&return 1
+  done
+  return 0
+}
+
+function main {
+  while getopts ":rac:" opt; do
+    case $opt in
+      r) regions=$OPTARG ;;
+      a) accounts=$OPTARG ;;
+      c) command=$OPTARG ;;
+    esac
+  done
+  run_command "${command}"
 }
