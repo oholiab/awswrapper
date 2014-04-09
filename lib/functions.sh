@@ -24,9 +24,9 @@ function get_creds {
 
 function run_command {
   local command=$1
-  AWS_ACCESS_KEY=$2
-  AWS_SECRET_KEY=$3
-  AWS_SECRET_ACCESS_KEY=$3
+  export AWS_ACCESS_KEY=$2
+  export AWS_SECRET_KEY=$3
+  export AWS_SECRET_ACCESS_KEY=$3
   eval "$command"
   return $?
 }
