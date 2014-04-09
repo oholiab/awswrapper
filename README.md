@@ -15,19 +15,19 @@ For instance, say you wanted to use the Amazon provided Java cli application
 than copying and pasting your access keys for each account, you can simply have 
 these credentials exported as: 
 
-  DEV_AWS_ACCESS_KEY=asdfkjhsdf
-  DEV_AWS_SECRET_KEY=asdfkjhsdf
-  PROD_AWS_ACCESS_KEY=asdfkjhsdf
-  PROD_AWS_SECRET_KEY=asdfkjhsdf
+    DEV_AWS_ACCESS_KEY=asdfkjhsdf
+    DEV_AWS_SECRET_KEY=asdfkjhsdf
+    PROD_AWS_ACCESS_KEY=asdfkjhsdf
+    PROD_AWS_SECRET_KEY=asdfkjhsdf
 
 and run
 
-  awsw -a dev prod -c ec2-describe-vpcs
+    awsw -a dev prod -c ec2-describe-vpcs
 
 (provided you've already supplied the other 11 million environment variables it
 asks for). Awswrapper will loop over those accounts, substituting these
-variables in as AWS_ACCESS_KEY and AWS_SECRET_KEY (and AWS_SECRET_ACCESS_KEY)
-before running the given command.
+variables in as `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` (and 
+`AWS_SECRET_ACCESS_KEY`) before running the given command.
 
 You can also access these variables by including `\$AWS_ACCESS_KEY` in the
 command, for example. As it's called through an eval, the variable gets
