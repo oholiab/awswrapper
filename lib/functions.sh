@@ -1,19 +1,19 @@
-function get_credentials {
+function get_creds {
   if [ -z "$1" -o -z "$2" ]; then 
     echo "2 arguments expected" >&2
     return 1
   fi
-  acc_name=$(echo $1 | tr 'a-z' 'A-Z')
-  key_type=$(echo $2 | tr 'a-z' 'A-Z')
+  local acc_name=$(echo $1 | tr 'a-z' 'A-Z')
+  local key_type=$(echo $2 | tr 'a-z' 'A-Z')
 
   if [ "$key_type" != 'ACCESS' -a "$key_type" != 'SECRET' ]; then
     echo "Key type should be either 'SECRET' or 'ACCESS'; was '$key_type'" >&2
     return 1
   fi
 
-  varname="${acc_name}_AWS_${key_type}_KEY"
+  local varname="${acc_name}_AWS_${key_type}_KEY"
 
-  key=$(eval echo \$${varname})
+  local key=$(eval echo \$${varname})
   if [ -z $key ]; then
     echo "Environment variable ${varname} is empty" >&2
     return 1
@@ -23,29 +23,63 @@ function get_credentials {
 }
 
 function run_command {
-  if [ -z "$1" ]; then
-    echo "1 argument expected" >&2
-    return 1
-  fi
-  eval "$*"
+  local command=$1
+  AWS_ACCESS_KEY=$2
+  AWS_SECRET_KEY=$3
+  AWS_SECRET_ACCESS_KEY=$3
+  eval "$command"
   return $?
 }
 
 function are_all_regions {
-  all_valid_regions="us-east-1 us-west-1 us-west-2 eu-west-1 ap-southeast-1 ap-southeast-2 ap-northeast-1 sa-east-1"
+  local all_valid_regions="us-east-1 us-west-1 us-west-2 eu-west-1 ap-southeast-1 ap-southeast-2 ap-northeast-1 sa-east-1"
   for i in $*; do
     [[ ! $all_valid_regions =~ $i ]] && echo "$i is not a valid region" >&2 &&return 1
   done
   return 0
 }
 
-function main {
-  while getopts ":rac:" opt; do
-    case $opt in
-      r) regions=$OPTARG ;;
-      a) accounts=$OPTARG ;;
-      c) command=$OPTARG ;;
-    esac
+function read_args {
+  local args=()
+  while (($#)) && [[ $1 != "-"* ]]; do
+    args+=("$1")
+    shift
   done
-  run_command "${command}"
+  echo "${args[@]}"
+  return 0
+}
+
+function main {
+  while (($#)); do
+    case $1 in
+      -r) local regions=$(read_args "${@:2}") 
+        echo "Regions feature not yet implemented" && return 1
+        ;;
+      -a) local accounts=$(read_args "${@:2}") ;;
+      -c) local command=$(read_args "${@:2}");;
+      -*) echo "$1 is not a supported flag" >&2 && return 1 ;;
+      *) ;;
+    esac
+    shift
+  done
+  #if [ -z "${regions[@]}" ]; then
+  #  echo "No regions were given and could not source from ${region_env}" >&2
+  #  return 1
+  #fi
+
+  are_all_regions $regions
+  local status=$?
+  if [ $status -ne 0 ]; then return 1; fi
+  local exit_code=0
+  for account in $accounts; do
+    local access_key=$(get_creds $account "access")
+    local secret_key=$(get_creds $account "secret")
+    if [ -z $access_key -o -z $secret_key ]; then
+      exit_code=1
+      continue
+    fi
+    run_command "${command}" "${access_key}" "${secret_key}"
+    if [ $? -eq 1 ]; then exit_code=1; fi
+  done
+  return $exit_code
 }

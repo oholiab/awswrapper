@@ -1,26 +1,37 @@
 load test_helpers
 
-FOO_AWS_ACCESS_KEY='foo'
-FOO_AWS_SECRET_KEY='bar'
+it="run_command"
 
-@test "returns 1 when the command returns 1" {
-  run run_command "false"
+a_key="foo"
+s_key="bar"
+
+@test "$it returns 1 when the command returns 1" {
+  run run_command "false" $a_key $s_key
   [ "$status" -eq 1 ]
 }
 
-@test "returns 0 when the command returns 0" {
-  run run_command "true"
+@test "$it returns 0 when the command returns 0" {
+  run run_command "true" $a_key $s_key
   [ "$status" -eq 0 ]
 }
 
-@test "prints correct stdout" {
-  run run_command "echo stuff"
+@test "$it prints correct stdout" {
+  command="echo stuff"
+  run run_command "$command" $a_key $s_key
   echo $output
   [ "$output" = "stuff" ]
 }
 
-@test "prints correct stderr" {
-  run run_command "echo stuff >&2"
+@test "$it prints correct stderr" {
+  command="echo stuff >&2"
+  run run_command "$command" $a_key $s_key
   echo $output
   [ "$output" = "stuff" ]
+}
+
+@test "$it receives the correct environment variables" {
+  command="echo \$AWS_ACCESS_KEY"
+  run run_command "$command" $a_key $s_key
+  echo $output
+  [ "$output" = "foo" ]
 }
