@@ -30,8 +30,8 @@ s_key="bar"
 }
 
 @test "$it receives the correct environment variables" {
-  command="echo \$AWS_ACCESS_KEY"
+  command="echo \$AWS_ACCESS_KEY \$AWS_SECRET_KEY \$AWS_ACCESS_KEY_ID \$AWS_SECRET_ACCESS_KEY"
   run run_command "$command" $a_key $s_key
   echo $output
-  [ "$output" = "foo" ]
+  [ "$output" = "foo bar foo bar" ]
 }
