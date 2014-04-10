@@ -1,3 +1,25 @@
+function usage {
+  cat << EOF
+  awsw: Wrapper for repeating AWS operations in named accounts and regions
+  USAGE: awsw -a ACCOUNT [ACCOUNT2 ...] -c "COMMAND"
+  ARGUMENTS:
+    -a  Named account, case insensitive. Must have an equivalent pair of
+        environment variables (\$ACCOUNT_AWS_ACCESS_KEY and
+        \$ACCOUNT_AWS_SECRET_KEY) set.
+
+    -c  Command to run. Ideally should be quoted as otherwise flags will be
+        treated as options for awsw rather than the command on first round
+        parsing. Any escaped variables (i.e. \\\$AWS_ACCESS_KEY) will be
+        expanded in the subshell.
+
+    -r  NOT YET IMPLEMENTED. Will loop through given regions.
+
+    -h  Display this message
+
+EOF
+}
+
+
 function get_creds {
   if [ -z "$1" -o -z "$2" ]; then 
     echo "2 arguments expected" >&2
@@ -58,6 +80,7 @@ function main {
         ;;
       -a) local accounts=$(read_args "${@:2}") ;;
       -c) local command=$(read_args "${@:2}");;
+      -h) usage; return 0;;
       -*) echo "$1 is not a supported flag" >&2 && return 1 ;;
       *) ;;
     esac
